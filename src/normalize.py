@@ -1,0 +1,1 @@
+from src.registry import NORMALIZER
