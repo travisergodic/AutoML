@@ -45,8 +45,6 @@ class InferenceMixin:
        }
 
 
-
-
 class Predictor(InferenceMixin):
    @classmethod
    def build_from_exp_dir(cls, exp_dir, label_col=None, metrics=None):
@@ -129,15 +127,12 @@ class Trainer(InferenceMixin):
        logger.info(f"Save preprocessor at {preprocessor_ckpt}")
 
 
-       self.performance_df.to_csv(metric_path)
+       self.performance_df.to_csv(metric_path, index=False)
        logger.info(f"Save metrics at {metric_path}")
 
 
-       self.pred_result_df.to_csv(pred_result_path)
+       self.pred_result_df.to_csv(pred_result_path, index=False)
        logger.info(f"Save prediction result at {pred_result_path}")
-
-       self.X_transformed.to_csv()
-
 
        save_json(self.used_cols, use_cols_path)
        logger.info(f"Save use columns at {use_cols_path}")

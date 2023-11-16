@@ -3,12 +3,10 @@ import sys
 import logging
 import importlib
 
-import shap
-import numpy as np 
+import json
 import pandas as pd
 from rich.table import Table
 from rich.console import Console
-import matplotlib.pyplot as plt
 
 
 logger=logging.getLogger(__name__)
@@ -50,3 +48,12 @@ def get_pretty_table(data, title):
     with console.capture() as capture:
         console.print(table, end='')
     return capture.get()
+
+
+def save_json(obj, path, indent=4):
+    f = open(path, "w") 
+    json.dump(obj, f, indent=indent) 
+
+def load_json(path):
+    f = open(path, "r")
+    return json.load(f) 

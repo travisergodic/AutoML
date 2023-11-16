@@ -55,18 +55,18 @@ def main():
     trainer.save(checkpoint_dir)
     model=(model if not args.search else search.best_estimator_)
     if hasattr(model, "feature_importance_"): 
-        get_feature_importance_df(model, trainer.features).to_csv(os.path.join(checkpoint_dir, "importance.csv"))
+        get_feature_importance_df(model, trainer.features).to_csv(os.path.join(checkpoint_dir, "importance.csv"), index=False)
 
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser(description="Train Model")
-   parser.add_argument("--cfg_file", type=str)
+   parser.add_argument("--config_file", type=str)
    parser.add_argument("--exp_name", type=str)
-   parser.add_argument("--model", type=str)
-   parser.add_argument("--search", action="store_true")
    parser.add_argument("--csv_path", type=str)
    parser.add_argument("--label_col", type=str)
    parser.add_argument("--split_col", type=str)
+   parser.add_argument("--model", type=str)
+   parser.add_argument("--search", action="store_true")
    args = parser.parse_args()
    config = get_cfg_by_file(args.config_file)
    main()
