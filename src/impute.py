@@ -1,1 +1,0 @@
-from src.registry import IMPUTER

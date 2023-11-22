@@ -6,6 +6,7 @@ sys.path.insert(0, os.getcwd())
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
 
 from src.utils import get_cfg_by_file
 from src.logger_helper import setup_logger
@@ -13,7 +14,7 @@ from src.trainer import Trainer
 from src.model import MODEL
 from src.search import SEARCH
 from src.utils import get_feature_importance_df
-from src.pipeline import build_encoder_pipeline, build_imputer_pipeline, build_normalizer_pipeline
+from src.pipeline import build_encoder_pipeline, build_imputer_pipeline, build_normalizer_pipeline, build_handler_pipeline
 
 
 logger = setup_logger(level=logging.INFO)
@@ -22,15 +23,20 @@ logger = setup_logger(level=logging.INFO)
 def main():
     df = pd.read_csv(args.csv_path, low_memory=False)
     logger.info(f"Read csv file from {args.csv_path}.")
+    # build handler pipeline & do data cleaning 
+    handler_ppipeline=build_handler_pipeline(config.list_of_handler_cfg)
+    df=handler_ppipeline.fit_transform(df)
 
     # build preprocessor
     encoder_pipeline=build_encoder_pipeline(config.list_of_encoder_cfg)
     imputer_pipeline=build_imputer_pipeline(config.list_of_imputer_cfg)
     normalizer_pipeline=build_normalizer_pipeline(config.list_of_normalizer_cfg)
     preprocessor=Pipeline(
-        ("encoder", encoder_pipeline), 
-        ("imputer", imputer_pipeline), 
-        ("normalizer", normalizer_pipeline), verbose=True
+        [
+            ("encoder", encoder_pipeline), 
+            ("imputer", imputer_pipeline), 
+            ("normalizer", normalizer_pipeline)
+        ], verbose=True
     )
 
     # build model
@@ -43,18 +49,28 @@ def main():
     # build trainer
     trainer = Trainer(
         (model if not args.search else search),
-        preprocessor, config.used_cols, args.label_cols, 
+        preprocessor, config.used_cols, args.label_col, 
         metrics=config.metrics
     )
 
     # train model
-    trainer.train(df[df[args.split_col]], df[~df[args.split_col]])
+    if args.split_col:
+        df_train, df_test=df[df[args.split_col]], df[~df[args.split_col]]
+
+    elif args.test_ratio:
+        df_train, df_test = train_test_split(df, test_size=args.test_ratio, stratify=df[args.label_col])
+        
+    else:
+        df_train, df_test=df, None
+        logger.info("No test set.")
+
+    trainer.train(df_train, df_test)
 
     # save checkpoints
     checkpoint_dir=f"./checkpoints/{args.exp_name}"
     trainer.save(checkpoint_dir)
     model=(model if not args.search else search.best_estimator_)
-    if hasattr(model, "feature_importance_"): 
+    if hasattr(model, "feature_importances_"): 
         get_feature_importance_df(model, trainer.features).to_csv(os.path.join(checkpoint_dir, "importance.csv"), index=False)
 
 
@@ -65,7 +81,7 @@ if __name__ == "__main__":
    parser.add_argument("--csv_path", type=str)
    parser.add_argument("--label_col", type=str)
    parser.add_argument("--split_col", type=str)
-   parser.add_argument("--model", type=str)
+   parser.add_argument("--test_ratio", type=float)
    parser.add_argument("--search", action="store_true")
    args = parser.parse_args()
    config = get_cfg_by_file(args.config_file)

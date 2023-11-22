@@ -26,17 +26,16 @@ Establish an automated, scalable, and maintainable ML pipeline to reduce the ML 
                       --csv_path ${csv_path} \
                       --label_col ${label_col} \
                       --split_col ${split_col} \
-                      --model ${model} \
+                      --test_ratio ${test_ratio} \
                       [--search]
    ```
    + **config_file**: Configuration file.
    + **exp_name**: Experiment name. All artifacts will be saved at `./checkpoints/{exp_name}` directory.
    + **csv_path**: csv path.
-   + **model**: Model name.
-   + **search**: Whether to use grid search or randomized search.
    + **label_col**: Label column.
    + **split_col**: The column used for train test split.
-
+   + **test_ratio**: Test ratio.
+   + **search**: Whether to use grid search or randomized search.
 
 2. **Inference**
    ```bash

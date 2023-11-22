@@ -1,0 +1,7 @@
+data/*
+checkpoint/*
+log/*
+.DS_Store
+checkpoints/*
+demo/*
+*.pyc

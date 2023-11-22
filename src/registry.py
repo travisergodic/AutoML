@@ -44,6 +44,7 @@ class Register:
         return obj 
 
 
+HANDLER=Register("handler")
 FILTER = Register("filter")
 MODEL = Register("model")
 SEARCH = Register("search")
