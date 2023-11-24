@@ -5,3 +5,4 @@ log/*
 checkpoints/*
 demo/*
 *.pyc
+*.csv
