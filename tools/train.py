@@ -13,7 +13,7 @@ from src.logger_helper import setup_logger
 from src.trainer import Trainer
 from src.model import MODEL
 from src.search import SEARCH
-from src.utils import get_feature_importance_df
+from src.utils import save_json
 from src.pipeline import build_encoder_pipeline, build_imputer_pipeline, build_normalizer_pipeline, build_handler_pipeline
 
 
@@ -58,7 +58,9 @@ def main():
         df_train, df_test=df[df[args.split_col]], df[~df[args.split_col]]
 
     elif args.test_ratio:
-        df_train, df_test = train_test_split(df, test_size=args.test_ratio, stratify=df[args.label_col])
+        df_train, df_test = train_test_split(
+            df, test_size=args.test_ratio, stratify=(df[args.label_col] if args.stratify else None), random_state=42
+        )
         
     else:
         df_train, df_test=df, None
@@ -69,10 +71,9 @@ def main():
     # save checkpoints
     checkpoint_dir=f"./checkpoints/{args.exp_name}"
     trainer.save(checkpoint_dir)
-    model=(model if not args.search else search.best_estimator_)
-    if hasattr(model, "feature_importances_"): 
-        get_feature_importance_df(model, trainer.features).to_csv(os.path.join(checkpoint_dir, "importance.csv"), index=False)
-
+    save_json(config.list_of_handler_cfg, checkpoint_dir+"/handlers.json")
+    logger.info(f"Save handler pipeline at {checkpoint_dir+'/handlers.json'}")
+    
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser(description="Train Model")
@@ -82,6 +83,7 @@ if __name__ == "__main__":
    parser.add_argument("--label_col", type=str)
    parser.add_argument("--split_col", type=str)
    parser.add_argument("--test_ratio", type=float)
+   parser.add_argument("--stratify", action="store_true")
    parser.add_argument("--search", action="store_true")
    args = parser.parse_args()
    config = get_cfg_by_file(args.config_file)

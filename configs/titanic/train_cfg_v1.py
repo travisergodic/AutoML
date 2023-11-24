@@ -2,7 +2,8 @@ list_of_handler_cfg=["titanic_cabin"]
 
 list_of_imputer_cfg=[
     dict(name="Cabin_first_char", type="simple", strategy="most_frequent"),
-    dict(name="Age", type="simple", strategy="median"), 
+    dict(name="Age", type="single_col_groupby", gp_col="Sex", strategy="median"), 
+    # dict(name="Age", type="simple", strategy="median"), 
     dict(name="Fare", type="simple", strategy="median"),
     dict(name="Embarked", type="simple", strategy="most_frequent")
 ]

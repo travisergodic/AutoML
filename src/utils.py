@@ -4,6 +4,7 @@ import logging
 import importlib
 
 import json
+import numpy as np
 import pandas as pd
 from rich.table import Table
 from rich.console import Console
@@ -13,11 +14,14 @@ logger=logging.getLogger(__name__)
 
 
 def get_feature_importance_df(model, features):
-    if not hasattr(model, "feature_importances_"):
+    from sklearn.linear_model import LogisticRegression
+    if isinstance(model, LogisticRegression):
+        df=pd.DataFrame({"feature": features, "importance": np.abs(model.coef_[0])})
+    elif hasattr(model, "feature_importances_"):
+        df= pd.DataFrame({"feature": features, "importance": model.feature_importances_})
+    else:
         raise ValueError(f"{model} does not have attribute: feature_importance_.")
-    return pd.DataFrame(
-        {"feature": features, "importance": model.feature_importances_}
-    ).sort_values(by=["importance"], ascending=False)
+    return df.sort_values(by=["importance"], ascending=False)
 
 
 def get_cfg_by_file(cfg_file):
