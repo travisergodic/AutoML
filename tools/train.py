@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import shutil
 import argparse
 sys.path.insert(0, os.getcwd())
 
@@ -12,6 +13,7 @@ from src.utils import get_cfg_by_file
 from src.logger_helper import setup_logger
 from src.trainer import Trainer
 from src.model import MODEL
+from src.metric import METRIC
 from src.search import SEARCH
 from src.utils import save_json
 from src.pipeline import build_encoder_pipeline, build_imputer_pipeline, build_normalizer_pipeline, build_handler_pipeline
@@ -46,11 +48,14 @@ def main():
     if args.search and config.search_cfg:
         search = SEARCH.build(model=model, **config.search_cfg)
   
+    # build metrics
+    metric_dict={cfg["type"]:METRIC.build(**cfg) for cfg in config.list_of_metric_cfg}
+
     # build trainer
     trainer = Trainer(
         (model if not args.search else search),
         preprocessor, config.used_cols, args.label_col, 
-        metrics=config.metrics
+        metric_dict=metric_dict
     )
 
     # train model
@@ -73,8 +78,10 @@ def main():
     trainer.save(checkpoint_dir)
     save_json(config.list_of_handler_cfg, checkpoint_dir+"/handlers.json")
     logger.info(f"Save handler pipeline at {checkpoint_dir+'/handlers.json'}")
+    shutil.copy(args.config_file, os.path.join(checkpoint_dir, os.path.basename(args.config_file)))
+    logger.info(f"Save config file at {os.path.join(checkpoint_dir, os.path.basename(args.config_file))}")
     
-
+    
 if __name__ == "__main__":
    parser = argparse.ArgumentParser(description="Train Model")
    parser.add_argument("--config_file", type=str)

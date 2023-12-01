@@ -6,3 +6,4 @@ checkpoints/*
 demo/*
 *.pyc
 *.csv
+*.ipynb_checkpoints/*

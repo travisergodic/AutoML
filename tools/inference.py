@@ -2,16 +2,20 @@ import os
 import sys
 import logging
 import argparse
+from pathlib import Path
 sys.path.insert(0, os.getcwd())
 
 import pandas as pd
 
 from src.trainer import Predictor
+from src.metric import METRIC
 from src.pipeline import build_handler_pipeline
-from src.utils import get_pretty_table, load_json
 from src.logger_helper import setup_logger
+from src.utils import get_pretty_table, get_cfg_by_file, load_json
+
 
 logger = setup_logger(level=logging.INFO)
+
 
 def main():
     # data
@@ -28,11 +32,17 @@ def main():
             raise ValueError(f"{args.split_col} not in dataframe!")
         else:
             df=df[~df[args.split_col]]
-
     logger.info(f"Got {len(df)} data for evaluation.")
 
+    # build metric dict
+    if args.eval_config_file:
+        config=get_cfg_by_file(args.eval_config_file)
+        metric_dict={cfg["type"]:METRIC.build(**cfg) for cfg in config.list_of_metric_cfg}
+    else:
+        metric_dict=None
+
     # build predictor
-    predictor=Predictor.build_from_exp_dir(args.exp_dir, args.label_col, args.metric)
+    predictor=Predictor.build_from_exp_dir(args.exp_dir, args.label_col, metric_dict)
 
     # evaluate
     if args.label_col in df:
@@ -51,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument("--csv_path", type=str)
     parser.add_argument("--label_col", type=str)
     parser.add_argument("--split_col", type=str)
-    parser.add_argument("--metric", type=str, nargs="+", default=[])
     parser.add_argument("--save_path", type=str)
+    parser.add_argument("--eval_config_file", type=str)
     args = parser.parse_args()
     main()

@@ -2,18 +2,16 @@ import os
 import logging
 from pathlib import Path
 
-
 import joblib
 import numpy as np
 import pandas as pd
 
-
-from .metric import METRIC
-from src.utils import get_pretty_table, save_json, load_json
 from src.utils import get_feature_importance_df
+from src.utils import get_pretty_table, save_json, load_json
 
 
 logger = logging.getLogger(__name__)
+
 
 class InferenceMixin:
     def predict(self, X):
@@ -34,42 +32,43 @@ class InferenceMixin:
 
 
     def evaluate(self, df):
-        if not self.metrics:
+        if not len(self.metric_dict):
             raise ValueError("Have not specify metrics for evaluation.")
       
         if len(df) == 0:
             logger.warning("Input dataframe does not have any element.")
             return {}
-  
+        
+        
         return {
-            metric: METRIC.build(type=metric, y_true=df[self.label_col].values, y_prob=self.predict_proba(df)) \
-                for metric in self.metrics
+            name: metric(y_true=df[self.label_col].values, y_prob=self.predict_proba(df)) \
+                for name, metric in self.metric_dict.items()
         }
 
 
 class Predictor(InferenceMixin):
     @classmethod
-    def build_from_exp_dir(cls, exp_dir, label_col=None, metrics=None):
+    def build_from_exp_dir(cls, exp_dir, label_col=None, metric_dict=None):
         model=joblib.load(os.path.join(exp_dir, "model.pkl"))
         preprocessor=joblib.load(os.path.join(exp_dir, "preprocessor.pkl"))
         used_cols=load_json(os.path.join(exp_dir, "use_cols.json"))
-        return cls(model, preprocessor, used_cols, label_col, metrics)
+        return cls(model, preprocessor, used_cols, label_col, metric_dict)
       
-    def __init__(self, model, preprocessor, used_cols, label_col=None, metrics=None):
+    def __init__(self, model, preprocessor, used_cols, label_col=None, metric_dict=None):
         self.model = model
         self.preprocessor=preprocessor
         self.used_cols=used_cols
         self.label_col=label_col
-        self.metrics=metrics
+        self.metric_dict=metric_dict
 
 
 class Trainer(InferenceMixin):   
-    def __init__(self, model, preprocessor, used_cols, label_col, metrics=None):
+    def __init__(self, model, preprocessor, used_cols, label_col, metric_dict=None):
         self.model=model
         self.preprocessor=preprocessor
         self.used_cols=used_cols
         self.label_col=label_col
-        self.metrics=metrics
+        self.metric_dict=metric_dict
       
     def fit(self, df_train):   
         X_train=self.preprocessor.fit_transform(df_train[self.used_cols])
@@ -84,7 +83,6 @@ class Trainer(InferenceMixin):
             [self.evaluate(df_train), self.evaluate(df_test)], index=["train", "test"]
         ).reset_index(drop=False).dropna()
         logger.info(get_pretty_table(self.performance_df, "model performance"))
-
 
         # get pred result df
         df_train_result=self.get_pred_result(df_train)

@@ -25,4 +25,6 @@ model_cfg={
     "enable_categorical": True, "verbosity": 1
 }
 
-metrics=["accuracy", "recall", "precision"]
+list_of_metric_cfg=[
+    dict(type="Accuracy"), dict(type="Recall"), dict(type="Precision")
+]

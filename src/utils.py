@@ -4,6 +4,7 @@ import logging
 import importlib
 
 import json
+import inspect
 import numpy as np
 import pandas as pd
 from rich.table import Table
@@ -60,4 +61,4 @@ def save_json(obj, path, indent=4):
 
 def load_json(path):
     f = open(path, "r")
-    return json.load(f) 
+    return json.load(f)
