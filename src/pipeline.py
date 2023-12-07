@@ -25,7 +25,7 @@ def build_encoder_pipeline(list_of_encoder_cfg=None):
     if (list_of_encoder_cfg is None) or (not list_of_encoder_cfg):
         return IdentityPipeline()
     return Pipeline(
-        [(encoder_cfg["name"], ENCODER.build(**encoder_cfg)) for encoder_cfg in list_of_encoder_cfg], verbose=True
+        [(cfg["name"], ENCODER.build(**cfg)) for cfg in list_of_encoder_cfg], verbose=True
     )
 
 
@@ -33,7 +33,7 @@ def build_imputer_pipeline(list_of_imputer_cfg=None):
     if (list_of_imputer_cfg is None) or (not list_of_imputer_cfg):
         return IdentityPipeline()
     return Pipeline(
-        [(encoder_cfg["name"], IMPUTER.build(**encoder_cfg)) for encoder_cfg in list_of_imputer_cfg], verbose=True
+        [(cfg["name"], IMPUTER.build(**cfg)) for cfg in list_of_imputer_cfg], verbose=True
     )
 
 
@@ -41,5 +41,5 @@ def build_normalizer_pipeline(list_of_normalizer_cfg=None):
     if (list_of_normalizer_cfg is None) or (not list_of_normalizer_cfg):
         return IdentityPipeline()
     return Pipeline(
-        [(encoder_cfg["name"], NORMALIZER.build(encoder_cfg)) for encoder_cfg in list_of_normalizer_cfg], verbose=True
+        [(cfg["name"], NORMALIZER.build(**cfg)) for cfg in list_of_normalizer_cfg], verbose=True
     )

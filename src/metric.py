@@ -7,6 +7,9 @@ class BaseMetric:
     def __init__(self, **cfg):
         self.cfg=cfg
 
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + "(" + ", ".join([f"{k}={v}" for k, v in self.cfg.items()]) + ")"
+
 
 @METRIC.register
 class Accuracy(BaseMetric):

@@ -9,3 +9,4 @@ python tools/train.py --config_file  ${config_file} \
                       --csv_path ${csv_path} \
                       --label_col ${label_col} \
                       --test_ratio ${test_ratio}
+                      # --search

@@ -20,7 +20,6 @@ class OrdinalColumnEncoder(BaseColumnTransformer):
         return cfg
 
 
-
 @ENCODER.register("onehot")
 class OnehotColumnEncoder(BaseColumnTransformer):
     TRANSFORMER_CLS=OneHotEncoder
@@ -37,5 +36,5 @@ class OnehotColumnEncoder(BaseColumnTransformer):
     def parse_cfg(self, cfg):
         if isinstance(cfg.get("categories"), list):
             cfg["categories"]=[cfg["categories"]]
-            cfg["sparse_output"]=False
+        cfg["sparse_output"]=False
         return cfg

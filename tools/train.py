@@ -18,7 +18,7 @@ from src.search import SEARCH
 from src.utils import save_json
 from src.pipeline import build_encoder_pipeline, build_imputer_pipeline, build_normalizer_pipeline, build_handler_pipeline
 
-
+pd.options.mode.chained_assignment = None
 logger = setup_logger(level=logging.INFO)
 
 
@@ -35,8 +35,8 @@ def main():
     normalizer_pipeline=build_normalizer_pipeline(config.list_of_normalizer_cfg)
     preprocessor=Pipeline(
         [
-            ("encoder", encoder_pipeline), 
             ("imputer", imputer_pipeline), 
+            ("encoder", encoder_pipeline), 
             ("normalizer", normalizer_pipeline)
         ], verbose=True
     )
@@ -49,7 +49,10 @@ def main():
         search = SEARCH.build(model=model, **config.search_cfg)
   
     # build metrics
-    metric_dict={cfg["type"]:METRIC.build(**cfg) for cfg in config.list_of_metric_cfg}
+    metric_dict=dict()
+    for cfg in config.list_of_metric_cfg:
+        calculator=METRIC.build(**cfg)
+        metric_dict[str(calculator)]=calculator
 
     # build trainer
     trainer = Trainer(

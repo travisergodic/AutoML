@@ -13,7 +13,7 @@ from src.pipeline import build_handler_pipeline
 from src.logger_helper import setup_logger
 from src.utils import get_pretty_table, get_cfg_by_file, load_json
 
-
+pd.options.mode.chained_assignment = None
 logger = setup_logger(level=logging.INFO)
 
 
@@ -36,8 +36,10 @@ def main():
 
     # build metric dict
     if args.eval_config_file:
-        config=get_cfg_by_file(args.eval_config_file)
-        metric_dict={cfg["type"]:METRIC.build(**cfg) for cfg in config.list_of_metric_cfg}
+        metric_dict=dict()
+        for cfg in get_cfg_by_file(args.eval_config_file).list_of_metric_cfg:
+            calculator=METRIC.build(**cfg)
+            metric_dict[str(calculator)]=calculator
     else:
         metric_dict=None
 
