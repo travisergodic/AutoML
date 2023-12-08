@@ -32,7 +32,7 @@ class InferenceMixin:
 
 
     def evaluate(self, df):
-        if not len(self.metric_dict):
+        if not len(self.metric_list):
             raise ValueError("Have not specify metrics for evaluation.")
       
         if len(df) == 0:
@@ -41,34 +41,34 @@ class InferenceMixin:
         
         
         return {
-            name: metric(y_true=df[self.label_col].values, y_prob=self.predict_proba(df)) \
-                for name, metric in self.metric_dict.items()
+            str(metric): metric(y_true=df[self.label_col].values, y_prob=self.predict_proba(df)) \
+                for metric in self.metric_list
         }
 
 
 class Predictor(InferenceMixin):
     @classmethod
-    def build_from_exp_dir(cls, exp_dir, label_col=None, metric_dict=None):
+    def build_from_exp_dir(cls, exp_dir, label_col=None, metric_list=None):
         model=joblib.load(os.path.join(exp_dir, "model.pkl"))
         preprocessor=joblib.load(os.path.join(exp_dir, "preprocessor.pkl"))
         used_cols=load_json(os.path.join(exp_dir, "use_cols.json"))
-        return cls(model, preprocessor, used_cols, label_col, metric_dict)
+        return cls(model, preprocessor, used_cols, label_col, metric_list)
       
-    def __init__(self, model, preprocessor, used_cols, label_col=None, metric_dict=None):
+    def __init__(self, model, preprocessor, used_cols, label_col=None, metric_list=None):
         self.model = model
         self.preprocessor=preprocessor
         self.used_cols=used_cols
         self.label_col=label_col
-        self.metric_dict=metric_dict
+        self.metric_list=metric_list
 
 
 class Trainer(InferenceMixin):   
-    def __init__(self, model, preprocessor, used_cols, label_col, metric_dict=None):
+    def __init__(self, model, preprocessor, used_cols, label_col, metric_list=None):
         self.model=model
         self.preprocessor=preprocessor
         self.used_cols=used_cols
         self.label_col=label_col
-        self.metric_dict=metric_dict
+        self.metric_list=metric_list
       
     def fit(self, df_train):   
         X_train=self.preprocessor.fit_transform(df_train[self.used_cols])

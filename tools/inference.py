@@ -36,15 +36,12 @@ def main():
 
     # build metric dict
     if args.eval_config_file:
-        metric_dict=dict()
-        for cfg in get_cfg_by_file(args.eval_config_file).list_of_metric_cfg:
-            calculator=METRIC.build(**cfg)
-            metric_dict[str(calculator)]=calculator
+        metric_list=[METRIC.build(**cfg) for cfg in get_cfg_by_file(args.eval_config_file).list_of_metric_cfg]
     else:
-        metric_dict=None
+        metric_list=None
 
     # build predictor
-    predictor=Predictor.build_from_exp_dir(args.exp_dir, args.label_col, metric_dict)
+    predictor=Predictor.build_from_exp_dir(args.exp_dir, args.label_col, metric_list)
 
     # evaluate
     if args.label_col in df:

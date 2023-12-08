@@ -49,16 +49,13 @@ def main():
         search = SEARCH.build(model=model, **config.search_cfg)
   
     # build metrics
-    metric_dict=dict()
-    for cfg in config.list_of_metric_cfg:
-        calculator=METRIC.build(**cfg)
-        metric_dict[str(calculator)]=calculator
+    metric_list=[METRIC.build(**cfg) for cfg in config.list_of_metric_cfg]
 
     # build trainer
     trainer = Trainer(
         (model if not args.search else search),
         preprocessor, config.used_cols, args.label_col, 
-        metric_dict=metric_dict
+        metric_list=metric_list
     )
 
     # train model
